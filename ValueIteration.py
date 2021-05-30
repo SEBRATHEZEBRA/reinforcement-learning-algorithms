@@ -37,7 +37,7 @@ def getRandomX():
 def getRandomY():
     return randint(0, height - 1)
 
-# Checks if the coordinates [x, y] are being used as the start state, end state or landmines.
+# Checks if the coordinates (x, y) are being used as the start state, end state or landmines.
 def checkFree(x, y):
 
     if [x, y] in landmines or [x, y] == start or [x, y] == end:
@@ -45,6 +45,7 @@ def checkFree(x, y):
 
     return True
 
+# Returns a list of legal actions a robot can perform from a set of coordinates (x, y) in the grid.
 def getLegalActions(x, y):
 
     legal = []
@@ -66,7 +67,17 @@ def getLegalActions(x, y):
 
     return legal
 
-def value(s, gamma, S, T, R, V):
+def value(x, y):
+
+    legal = []
+    legal = getLegalActions(x, y)
+
+    values = []
+    for move in legal:
+        values.append(states[x + directions[move][0]][y + directions[move][1]])
+
+
+def startVI():
 
     # Initialize values for all states to 0.
     for i in range(height):
@@ -74,10 +85,20 @@ def value(s, gamma, S, T, R, V):
 
     # Initialize the end state to 100.
     states[end[0]][end[1]] = 100
+    states[start[0]][start[1]] = 's'
+
+    for i in landmines:
+        states[i[0]][i[1]] = -1
 
     for s in states:
+        print(s)
+    print()
 
-
+    for y in range(height):
+        for x in range(width):
+            value(x, y)
+            print(end="-")
+        print()
 
 def main():
 
@@ -105,6 +126,8 @@ def main():
                 y = getRandomY()
 
             landmines.append([x, y])
+
+    startVI()
 
 
 if __name__ == "__main__":
