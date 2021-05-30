@@ -1,7 +1,13 @@
 from sys import argv
 from random import randint
 
+iterations = []
 states = []
+
+if (len(argv) < 3):
+    print("Correct use: python3 Reinforcement.py <width> <height> [options]")
+    exit()
+
 width = int(argv[1])
 height = int(argv[2])
 
@@ -13,6 +19,7 @@ start = [0, 0]
 end = [0, 0]
 
 gamma = 0.9
+minimum = 0.05
 
 # Directions the robot can move.
 directions = {
@@ -38,12 +45,41 @@ def checkFree(x, y):
 
     return True
 
+def getLegalActions(x, y):
+
+    legal = []
+    if x == 0:
+        legal.append("RIGHT")
+    elif x == width - 1:
+        legal.append("LEFT")
+    else:
+        legal.append("LEFT")
+        legal.append("RIGHT")
+
+    if y == 0:
+        legal.append("DOWN")
+    elif y == height - 1:
+        legal.append("UP")
+    else:
+        legal.append("DOWN")
+        legal.append("UP")
+
+    return legal
+
+def value(s, gamma, S, T, R, V):
+
+    # Initialize values for all states to 0.
+    for i in range(height):
+        states.append([0] * width)
+
+    # Initialize the end state to 100.
+    states[end[0]][end[1]] = 100
+
+    for s in states:
+
+
 
 def main():
-
-    if (len(argv) < 3):
-        print("Correct use: python3 Reinforcement.py <width> <height> [options]")
-        return
 
     if (len(argv) == 3):
         start[0] = getRandomX()
@@ -69,9 +105,6 @@ def main():
                 y = getRandomY()
 
             landmines.append([x, y])
-
-    print(start, "", end)
-    print(landmines)
 
 
 if __name__ == "__main__":
