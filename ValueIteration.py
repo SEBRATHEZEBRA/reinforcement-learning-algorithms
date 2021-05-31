@@ -7,6 +7,7 @@ from Animate import generateAnimat
 
 records = []
 states = []
+previous = []
 opt_pol = []
 
 if (len(argv) < 3):
@@ -80,7 +81,7 @@ def value(x, y):
     # Add the values of each neighbouring state to the values array.
     values = []
     for move in legal:
-        values.append(states[y + directions[move][0]][x + directions[move][1]])
+        values.append(previous[y + directions[move][0]][x + directions[move][1]])
 
     # Getting the index of the max value.
     max = 0
@@ -88,11 +89,14 @@ def value(x, y):
         if values[i] > values[max]:
             max = i
 
+    # My version of Bellman's equation but it doesn't include R.
     value = gamma * values[max]
     return round(value, 2)
 
+# Finds the optimal policy.
 def getOptPol():
 
+    # Appending the starting state to the optimal policy.
     opt_pol.append((start[0], start[1]))
     y = start[0]
     x = start[1]
@@ -113,18 +117,18 @@ def getOptPol():
             if values[i] > values[max]:
                 max = i
 
+        # Getting the coordinates of the max value.
         y += directions[legal[max]][0]
         x += directions[legal[max]][1]
 
         opt_pol.append((y, x))
 
+        # Checking if we have reached the end state yet.
         if [y, x] == end:
             break
 
 # Starts the value iteration algorithm
 def startVI():
-
-    previous = []
 
     # Initialize values for all states to 0.
     for i in range(height):
@@ -135,27 +139,27 @@ def startVI():
     states[end[0]][end[1]] = 100
     states[start[0]][start[1]] = 0
 
+    # Initializing the landmines to -100.
     for i in landmines:
         states[i[0]][i[1]] = -100
 
     i = 0
     while True:
 
-        for s in states:
-            print(s)
-        print()
-
         records.append(deepcopy(states))
 
+        # Making a deepcopy of the states to previous
         for i in range(height):
             for j in range(width):
                 previous[i][j] = states[i][j]
 
+        # For each state I update the value of the next iteration.
         for y in range(height):
             for x in range(width):
                 if [y, x] != start and [y, x] != end and [y, x] not in landmines:
                     states[y][x] = value(x, y)
 
+        # Convergence condition is that there is on change between the previous and current states.
         if previous == states and i > 0:
             break
 
