@@ -1,8 +1,9 @@
 from sys import argv
 from random import randint
 
-iterations = []
+records = []
 states = []
+opt_pol = []
 
 if (len(argv) < 3):
     print("Correct use: python3 Reinforcement.py <width> <height> [options]")
@@ -19,14 +20,13 @@ start = [0, 0]
 end = [0, 0]
 
 gamma = 0.9
-minimum = 0.05
 
 # Directions the robot can move.
 directions = {
-    "UP":[0, 1],
-    "DOWN":[0, -1],
-    "LEFT":[-1, 0],
-    "RIGHT":[1, 0]
+    "UP":[-1, 0],
+    "DOWN":[1, 0],
+    "LEFT":[0, -1],
+    "RIGHT":[0, 1]
 }
 
 # Returns a random x value in the gridworld.
@@ -67,44 +67,96 @@ def getLegalActions(x, y):
 
     return legal
 
+# The value function
 def value(x, y):
 
     legal = []
     legal = getLegalActions(x, y)
 
+    # Add the values of each neighbouring state to the values array.
     values = []
     for move in legal:
-        values.append(states[x + directions[move][0]][y + directions[move][1]])
+        values.append(states[y + directions[move][0]][x + directions[move][1]])
 
+    # Getting the index of the max value.
+    max = 0
+    for i in range(1, len(values)):
+        if values[i] > values[max]:
+            max = i
 
+    value = gamma * values[max]
+    return round(value, 2)
+
+def getOptPol():
+
+    opt_pol.append((start[0], start[1]))
+    y = start[0]
+    x = start[1]
+
+    while True:
+
+        legal = []
+        legal = getLegalActions(x, y)
+
+        # Add the values of each neighbouring state to the values array.
+        values = []
+        for move in legal:
+            values.append(states[y + directions[move][0]][x + directions[move][1]])
+
+        # Getting the index of the max value.
+        max = 0
+        for i in range(1, len(values)):
+            if values[i] > values[max]:
+                max = i
+
+        y += directions[legal[max]][0]
+        x += directions[legal[max]][1]
+
+        opt_pol.append((y, x))
+
+        if [y, x] == end:
+            break
+
+# Starts the value iteration algorithm
 def startVI():
+
+    previous = []
 
     # Initialize values for all states to 0.
     for i in range(height):
         states.append([0] * width)
+        previous.append([0] * width)
 
     # Initialize the end state to 100.
     states[end[0]][end[1]] = 100
-    states[start[0]][start[1]] = 's'
+    states[start[0]][start[1]] = 0
 
     for i in landmines:
-        states[i[0]][i[1]] = -1
+        states[i[0]][i[1]] = -100
 
-    for s in states:
-        print(s)
-    print()
+    i = 0
+    while True:
 
-    for y in range(height):
-        for x in range(width):
-            value(x, y)
-            print(end="-")
-        print()
+        for i in range(height):
+            for j in range(width):
+                previous[i][j] = states[i][j]
+
+        for y in range(height):
+            for x in range(width):
+                if [y, x] != start and [y, x] != end and [y, x] not in landmines:
+                    states[y][x] = value(x, y)
+
+        if previous == states and i > 0:
+            break
+
+        i += 1
+
 
 def main():
 
     if (len(argv) == 3):
-        start[0] = getRandomX()
-        start[1] = getRandomY()
+        start[0] = getRandomY()
+        start[1] = getRandomX()
 
         x = getRandomX()
         y = getRandomY()
@@ -113,8 +165,8 @@ def main():
             x = getRandomX()
             y = getRandomY()
 
-        end[0] = x
-        end[1] = y
+        end[0] = y
+        end[1] = x
 
         for i in range(k):
 
@@ -125,9 +177,10 @@ def main():
                 x = getRandomX()
                 y = getRandomY()
 
-            landmines.append([x, y])
+            landmines.append([y, x])
 
     startVI()
+    getOptPol()
 
 
 if __name__ == "__main__":
