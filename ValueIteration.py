@@ -1,5 +1,9 @@
+import matplotlib.pyplot as plt
+
 from sys import argv
 from random import randint
+from copy import deepcopy
+from Animate import generateAnimat
 
 records = []
 states = []
@@ -137,6 +141,12 @@ def startVI():
     i = 0
     while True:
 
+        for s in states:
+            print(s)
+        print()
+
+        records.append(deepcopy(states))
+
         for i in range(height):
             for j in range(width):
                 previous[i][j] = states[i][j]
@@ -181,6 +191,9 @@ def main():
 
     startVI()
     getOptPol()
+
+    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-1, just_vals=False, generate_gif=False, vmin = -1, vmax = 100)
+    plt.show()
 
 
 if __name__ == "__main__":
