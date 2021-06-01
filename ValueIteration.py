@@ -214,21 +214,24 @@ def main():
         if "-end" not in argv:
             genRandomEnd()
 
-        for i in range(3, len(argv)):
+        i = 3
+        while i < len(argv):
+            print(i)
             if argv[i] == "-start":
-                start[0] = argv[i + 2]
-                start[1] = argv[i + 1]
-                i += 2
+                print("in")
+                start[0] = int(argv[i + 2])
+                start[1] = int(argv[i + 1])
+                i += 3
             elif argv[i] == "-end":
-                end[0] = argv[i + 2]
-                end[1] = argv[i + 1]
-                i += 2
+                end[0] = int(argv[i + 2])
+                end[1] = int(argv[i + 1])
+                i += 3
             elif argv[i] == "-k":
-                k = argv[i + 1]
-                i += 1
+                k = int(argv[i + 1])
+                i += 2
             elif argv[i] == "-gamma":
-                gamma = argv[i + 1]
-                i += 1
+                gamma = float(argv[i + 1])
+                i += 2
             else:
                 print("Incorrect option.")
                 print("Correct options are:")
