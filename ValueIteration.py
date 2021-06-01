@@ -69,7 +69,7 @@ def genRandomEnd():
 
 # Generates random positions for the landmines.
 def genRandomMines():
-
+    print(k)
     for i in range(k):
 
         x = getRandomX()
@@ -199,6 +199,7 @@ def startVI():
 
 def main():
 
+    global k
     # Checking if any options are selected.
     if len(argv) == 3:
         genRandomStart()
@@ -216,9 +217,7 @@ def main():
 
         i = 3
         while i < len(argv):
-            print(i)
             if argv[i] == "-start":
-                print("in")
                 start[0] = int(argv[i + 2])
                 start[1] = int(argv[i + 1])
                 i += 3
@@ -228,6 +227,7 @@ def main():
                 i += 3
             elif argv[i] == "-k":
                 k = int(argv[i + 1])
+                genRandomMines()
                 i += 2
             elif argv[i] == "-gamma":
                 gamma = float(argv[i + 1])
