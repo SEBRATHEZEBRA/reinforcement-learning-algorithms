@@ -32,7 +32,7 @@ gamma = 0.9
 n = 0.8
 
 # Number of episodes
-e = 10
+e = 1000
 
 # Directions the robot can move.
 directions = {
@@ -181,7 +181,6 @@ def addRecord():
 
     records.append(r)
 
-
 # Finds the optimal policy.
 def getOptPol():
 
@@ -189,6 +188,7 @@ def getOptPol():
     opt_pol.append((start[0], start[1]))
     y = start[0]
     x = start[1]
+    previous = []
 
     s = 0
     while True:
@@ -203,18 +203,35 @@ def getOptPol():
 
         # Getting the index of the max value.
         max = 0
+        maxValue = values[max]
+
+        bigY = y + directions[legal[max]][0]
+        bigX = x + directions[legal[max]][1]
+        if [bigY, bigX] in previous:
+            maxValue = -1
+
         for i in range(1, len(values)):
-            if values[i] > values[max]:
+
+            bigY = y + directions[legal[i]][0]
+            bigX = x + directions[legal[i]][1]
+
+            if values[i] > maxValue and [bigY, bigX] not in previous:
+                print(previous)
+                print([bigY, bigX])
                 max = i
+                maxValue = values[i]
 
         # Getting the coordinates of the max value.
         y += directions[legal[max]][0]
         x += directions[legal[max]][1]
 
+        # Adding the coordinates to the optimal policy array.
+        previous.append([y, x])
         opt_pol.append((y, x))
 
         # Checking if we have reached the end state yet.
         if [y, x] == end:
+            print("end")
             break
 
 # Starts the Q-Learning.
@@ -338,9 +355,12 @@ def main():
                 return
 
     startQL()
-    getOptPol()
 
-    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, generate_gif=False, vmin = -100, vmax = 100)
+    for i in range(height):
+        print(records[len(records) - 1][i])
+
+    getOptPol()
+    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, fps = 100, vmin = -100, vmax = 100)
     plt.show()
 
 
