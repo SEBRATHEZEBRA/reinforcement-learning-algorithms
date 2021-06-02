@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 from sys import argv
 from random import randint
 from copy import deepcopy
+from time import perf_counter
 from Animate import generateAnimat
 
 records = []
 opt_pol = []
-rewards = []
 
 # Q-table format is: 0 - coordinates in gridworld, 1 - left, 2 - right, 3 - up, 4 - down
 qTable = []
@@ -32,7 +32,7 @@ gamma = 0.9
 n = 0.8
 
 # Number of episodes
-e = 1000
+e = 10000
 
 # Directions the robot can move.
 directions = {
@@ -53,7 +53,7 @@ def getRandomY():
 # Checks if the coordinates (x, y) are being used as the start state, end state or landmines.
 def checkFree(x, y):
 
-    if [x, y] in landmines or [x, y] == start or [x, y] == end:
+    if [y, x] in landmines or [y, x] == start or [y, x] == end:
         return False
 
     return True
@@ -136,7 +136,7 @@ def getDI(direction):
         return -1
 
 # Returns the max value of known actions.
-def value(x, y):
+def maxValue(x, y):
 
     legal = []
     legal = getLegalActions(x, y)
@@ -189,6 +189,7 @@ def getOptPol():
     y = start[0]
     x = start[1]
     previous = []
+    time = perf_counter()
 
     s = 0
     while True:
@@ -205,19 +206,15 @@ def getOptPol():
         max = 0
         maxValue = values[max]
 
-        bigY = y + directions[legal[max]][0]
-        bigX = x + directions[legal[max]][1]
-        if [bigY, bigX] in previous:
+        coords = [y + directions[legal[max]][0], x + directions[legal[max]][1]]
+        if coords in previous:
             maxValue = -1
 
         for i in range(1, len(values)):
 
-            bigY = y + directions[legal[i]][0]
-            bigX = x + directions[legal[i]][1]
+            coords = [y + directions[legal[max]][0], x + directions[legal[max]][1]]
 
-            if values[i] > maxValue and [bigY, bigX] not in previous:
-                print(previous)
-                print([bigY, bigX])
+            if values[i] > maxValue and coords not in previous:
                 max = i
                 maxValue = values[i]
 
@@ -229,18 +226,20 @@ def getOptPol():
         previous.append([y, x])
         opt_pol.append((y, x))
 
+        # Timing out if optimal policy isn't being found.
+        diff = perf_counter() - time
+        if diff > 5:
+            print("Optimal policy not found, stuck in a loop between coords again.")
+            break
+
         # Checking if we have reached the end state yet.
         if [y, x] == end:
-            print("end")
             break
 
 # Starts the Q-Learning.
 def startQL():
-    print("Starting Q-Learning.")
 
-    for i in range(height):
-        rewards.append([0] * width)
-
+    # Initializing the qTable to 0.
     x = 0
     y = 0
     for i in range(height * width):
@@ -252,11 +251,6 @@ def startQL():
 
         qTable[i][0] = [y, x]
         x += 1
-
-    rewards[end[0]][end[1]] = 100
-
-    for i in range(k):
-        rewards[landmines[i][0]][landmines[i][1]] = -100
 
     # Running for a total of e episodes.
     for i in range(e):
@@ -279,8 +273,15 @@ def startQL():
             next = [current[0] + randAct[0], current[1] + randAct[1]]
             nextI = getQIndex(next[1], next[0])
 
+            if next in landmines:
+                reward = -100
+            elif next == end:
+                reward = 100
+            else:
+                reward = 0
+
             # Calculating the q-value of the current state.
-            qTable[currentI][dir] += n * (rewards[next[0]][next[1]] + gamma * value(next[1], next[0]) - qTable[currentI][dir])
+            qTable[currentI][dir] = qTable[currentI][dir] + n * (reward + gamma * maxValue(next[1], next[0]) - qTable[currentI][dir])
             qTable[currentI][dir] = round(qTable[currentI][dir], 2)
 
             # Setting the next state as the current state.
@@ -355,12 +356,8 @@ def main():
                 return
 
     startQL()
-
-    for i in range(height):
-        print(records[len(records) - 1][i])
-
     getOptPol()
-    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, fps = 100, vmin = -100, vmax = 100)
+    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, fps = 250, vmin = -100, vmax = 100)
     plt.show()
 
 
