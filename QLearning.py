@@ -140,11 +140,13 @@ def value(x, y):
 
     legal = []
     legal = getLegalActions(x, y)
+    qIndex = getQIndex(x, y)
 
     # Add the values of each neighbouring state to the values array.
     values = []
     for move in legal:
-        values.append(qValues[y + directions[move][0]][x + directions[move][1]])
+        i = getDI(move)
+        values.append(qTable[qIndex][i])
 
     # Getting the index of the max value.
     max = 0
@@ -235,7 +237,7 @@ def startQL():
             nextI = getQIndex(next[1], next[0])
 
             # Calculating the q-value of the current state.
-            qTable[currentI]
+            qTable[currentI][dir] += n * (rewards[next[0]][next[1]] + gamma * value(next[1], next[0]) - qTable[currentI][dir])
 
             #qValues[current[0]][current[1]] = previousQValues[current[0]][current[1]] + n * (rewards[next[0]][next[1]] + gamma * (value(next[1], next[0])) - previousQValues[current[0]][current[1]])
             #qValues[current[0]][current[1]] = round(qValues[current[0]][current[1]], 3)
