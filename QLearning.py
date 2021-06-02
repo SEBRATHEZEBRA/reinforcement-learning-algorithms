@@ -32,7 +32,7 @@ gamma = 0.9
 n = 0.8
 
 # Number of episodes
-e = 10000
+e = 10
 
 # Directions the robot can move.
 directions = {
@@ -133,7 +133,7 @@ def getDI(direction):
     elif direction == "DOWN":
         return 4
     else:
-    return -1
+        return -1
 
 # Returns the max value of known actions.
 def value(x, y):
@@ -155,6 +155,32 @@ def value(x, y):
             max = i
 
     return values[max]
+
+# Adds the record of the current episode to the records array.
+def addRecord():
+
+    r = []
+    for i in range(height):
+        r.append([0] * width)
+
+    for i in range(height * width):
+
+        y = qTable[i][0][0]
+        x = qTable[i][0][1]
+
+        legal = []
+        legal = getLegalActions(x, y)
+
+        for move in legal:
+
+            d = getDI(move)
+            value = qTable[i][d]
+
+            if value > r[y][x]:
+                r[y][x] = value
+
+    records.append(r)
+
 
 # Finds the optimal policy.
 def getOptPol():
@@ -238,13 +264,13 @@ def startQL():
 
             # Calculating the q-value of the current state.
             qTable[currentI][dir] += n * (rewards[next[0]][next[1]] + gamma * value(next[1], next[0]) - qTable[currentI][dir])
-
-            #qValues[current[0]][current[1]] = previousQValues[current[0]][current[1]] + n * (rewards[next[0]][next[1]] + gamma * (value(next[1], next[0])) - previousQValues[current[0]][current[1]])
-            #qValues[current[0]][current[1]] = round(qValues[current[0]][current[1]], 3)
+            qTable[currentI][dir] = round(qTable[currentI][dir], 2)
 
             # Setting the next state as the current state.
             current[0] = next[0]
             current[1] = next[1]
+
+        addRecord()
 
 def main():
 
@@ -312,10 +338,10 @@ def main():
                 return
 
     startQL()
-    #getOptPol()
+    getOptPol()
 
-    #generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, generate_gif=False, vmin = -100, vmax = 100)
-    #plt.show()
+    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, generate_gif=False, vmin = -100, vmax = 100)
+    plt.show()
 
 
 if __name__ == "__main__":
