@@ -1,5 +1,5 @@
 # Reinforcement Learning
-
+## Q-Learning program isn't working all the time.
 ## File used
 Animate.py: Code given in order to animate the results, I modified it by switching the x and y coordinates around as that is how I implemented my program.
 
