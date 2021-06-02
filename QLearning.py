@@ -6,10 +6,11 @@ from copy import deepcopy
 from Animate import generateAnimat
 
 records = []
-qValues = []
-previousQValues = []
 opt_pol = []
 rewards = []
+
+# Q-table format is: 0 - coordinates in gridworld, 1 - left, 2 - right, 3 - up, 4 - down
+qTable = []
 
 if (len(argv) < 3):
     print("Correct use: python3 Reinforcement.py <width> <height> [options]")
@@ -31,7 +32,7 @@ gamma = 0.9
 n = 0.8
 
 # Number of episodes
-e = 5
+e = 10000
 
 # Directions the robot can move.
 directions = {
@@ -110,6 +111,30 @@ def getLegalActions(x, y):
 
     return legal
 
+# Returns the index in the Q-table for a set of coordinates.
+def getQIndex(x, y):
+
+    for i in range(height * width):
+        if qTable[i][0] == [y, x]:
+            return i
+
+    i = -1
+    return i
+
+# Returns the index of the direction specified.
+def getDI(direction):
+
+    if direction == "LEFT":
+        return 1
+    elif direction == "RIGHT":
+        return 2
+    elif direction == "UP":
+        return 3
+    elif direction == "DOWN":
+        return 4
+    else:
+    return -1
+
 # Returns the max value of known actions.
 def value(x, y):
 
@@ -160,14 +185,6 @@ def getOptPol():
 
         opt_pol.append((y, x))
 
-        #print(opt_pol)
-
-        #if s > 20:
-        #    exit()
-
-        #s += 1
-
-
         # Checking if we have reached the end state yet.
         if [y, x] == end:
             break
@@ -177,8 +194,19 @@ def startQL():
     print("Starting Q-Learning.")
 
     for i in range(height):
-        qValues.append([0] * width)
         rewards.append([0] * width)
+
+    x = 0
+    y = 0
+    for i in range(height * width):
+
+        qTable.append([0] * 5)
+        if i % width == 0 and i > 0:
+            x = 0
+            y += 1
+
+        qTable[i][0] = [y, x]
+        x += 1
 
     rewards[end[0]][end[1]] = 100
 
@@ -190,12 +218,7 @@ def startQL():
 
         # Selecting a random inital current state
         current = [randint(0, height - 1), randint(0, width - 1)]
-        previousQValues = deepcopy(qValues)
-        records.append(deepcopy(qValues))
-
-        print("Episode:", i)
-        for j in qValues:
-            print(j)
+        currentI = getQIndex(current[1], current[0])
 
         while current != end and current not in landmines:
 
@@ -203,14 +226,19 @@ def startQL():
             legal = []
             legal = getLegalActions(current[1], current[0])
             x = randint(0, len(legal) - 1)
-            randAct = directions[legal[x]]
+            d = legal[x]
+            randAct = directions[d]
+            dir = getDI(d)
 
             # Getting the coordinates of the next state.
             next = [current[0] + randAct[0], current[1] + randAct[1]]
+            nextI = getQIndex(next[1], next[0])
 
             # Calculating the q-value of the current state.
-            qValues[current[0]][current[1]] = previousQValues[current[0]][current[1]] + n * (rewards[next[0]][next[1]] + gamma * (value(next[1], next[0])) - previousQValues[current[0]][current[1]])
-            qValues[current[0]][current[1]] = round(qValues[current[0]][current[1]], 3)
+            qTable[currentI]
+
+            #qValues[current[0]][current[1]] = previousQValues[current[0]][current[1]] + n * (rewards[next[0]][next[1]] + gamma * (value(next[1], next[0])) - previousQValues[current[0]][current[1]])
+            #qValues[current[0]][current[1]] = round(qValues[current[0]][current[1]], 3)
 
             # Setting the next state as the current state.
             current[0] = next[0]
@@ -237,31 +265,39 @@ def main():
         if "-end" not in argv:
             genRandomEnd()
 
+        if "-k" not in argv:
+            genRandomMines()
+
         i = 3
         while i < len(argv):
-            print(i)
+
             if argv[i] == "-start":
-                print("in")
                 start[0] = int(argv[i + 2])
                 start[1] = int(argv[i + 1])
                 i += 3
+
             elif argv[i] == "-end":
                 end[0] = int(argv[i + 2])
                 end[1] = int(argv[i + 1])
                 i += 3
+
             elif argv[i] == "-k":
                 k = int(argv[i + 1])
                 i += 2
                 genRandomMines()
+
             elif argv[i] == "-gamma":
                 gamma = float(argv[i + 1])
                 i += 2
+
             elif argv[i] == "-learning":
                 n = float(argv[i + 1])
                 i += 2
+
             elif argv[i] == "-epochs":
                 e = int(argv[i + 1])
                 i += 2
+
             else:
                 print("Incorrect option.")
                 print("Correct options are:")
@@ -274,13 +310,10 @@ def main():
                 return
 
     startQL()
-    print("in optPol function")
-    getOptPol()
+    #getOptPol()
 
-    print("About to animate")
-
-    generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, generate_gif=False, vmin = -100, vmax = 100)
-    plt.show()
+    #generateAnimat(records, start, end, mines=landmines, opt_pol=opt_pol, start_val=0, end_val=100, mine_val=-100, just_vals=False, generate_gif=False, vmin = -100, vmax = 100)
+    #plt.show()
 
 
 if __name__ == "__main__":
