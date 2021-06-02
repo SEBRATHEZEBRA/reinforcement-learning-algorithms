@@ -168,16 +168,21 @@ def addRecord():
         y = qTable[i][0][0]
         x = qTable[i][0][1]
 
+        y1 = qTable[i][0][0]
+        x1 = qTable[i][0][1]
+
         legal = []
         legal = getLegalActions(x, y)
 
         for move in legal:
 
             d = getDI(move)
-            value = qTable[i][d]
+            x1 = x + directions[move][1]
+            y1 = y + directions[move][0]
 
-            if value > r[y][x]:
-                r[y][x] = value
+            value = qTable[i][d]
+            if value > r[y1][x1]:
+                r[y1][x1] = value
 
     records.append(r)
 
